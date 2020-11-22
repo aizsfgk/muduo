@@ -113,9 +113,11 @@ EventLoop::~EventLoop()
 {
   LOG_DEBUG << "EventLoop " << this << " of thread " << threadId_
             << " destructs in thread " << CurrentThread::tid();
+
   wakeupChannel_->disableAll();
   wakeupChannel_->remove();
-  ::close(wakeupFd_);
+
+  ::close(wakeupFd_); // 析构的时候关闭
   t_loopInThisThread = NULL;
 }
 
@@ -250,7 +252,7 @@ void EventLoop::cancel(TimerId timerId)
 }
 
 
-
+/**************** 定时器函数结束 **************************/
 
 
 void EventLoop::updateChannel(Channel* channel)

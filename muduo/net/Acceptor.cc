@@ -68,7 +68,7 @@ void Acceptor::handleRead()
     }
     else
     {
-      sockets::close(connfd);
+      sockets::close(connfd);     /// 没有新连接回调函数；直接关闭
     }
   }
   else
@@ -77,8 +77,17 @@ void Acceptor::handleRead()
     // Read the section named "The special problem of
     // accept()ing when you can't" in libev's doc.
     // By Marc Lehmann, author of libev.
-    if (errno == EMFILE)
+    if (errno == EMFILE)       /// 进程打开的文件描述符达到上限，服务器accept时，返回EMFILE
     {
+      /*
+          
+            处理方法：
+              一开始打开一个空闲的文件描述符；
+              当遇到上述情况时，先关闭这个文件描述符，此时将获得一个文件描述符的名额；
+              再用accept接受客户端连接；
+              立即关闭connectfd（优雅的与客户端断开连接）；
+              重新打开一个文件描述符，以备再次出现上述情况。
+       */
       ::close(idleFd_);
       idleFd_ = ::accept(acceptSocket_.fd(), NULL, NULL);
       ::close(idleFd_);

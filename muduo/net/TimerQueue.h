@@ -31,7 +31,9 @@ class TimerId;
 ///
 /// A best efforts timer queue.
 /// No guarantee that the callback will be on time.
-///
+/// 
+/// 10个函数
+/// 7个本地变量
 class TimerQueue : noncopyable
 {
  public:
@@ -55,10 +57,10 @@ class TimerQueue : noncopyable
   // This requires heterogeneous comparison lookup (N3465) from C++14
   // so that we can find an T* in a set<unique_ptr<T>>.
   typedef std::pair<Timestamp, Timer*> Entry;
-  typedef std::set<Entry> TimerList;                /// 定时器列表
+  typedef std::set<Entry> TimerList;                /// 定时器列表;   红黑树，所以是有序的
 
   typedef std::pair<Timer*, int64_t> ActiveTimer;   /// 激活的定时器
-  typedef std::set<ActiveTimer> ActiveTimerSet;     /// 激活的定时器集合
+  typedef std::set<ActiveTimer> ActiveTimerSet;     /// 激活的定时器集合； 红黑树，所以是有序的
 
   void addTimerInLoop(Timer* timer);
   void cancelInLoop(TimerId timerId);
@@ -78,10 +80,10 @@ class TimerQueue : noncopyable
   // timerfdChannel 关注channel
   Channel timerfdChannel_;
   // Timer list sorted by expiration
-  TimerList timers_;
+  TimerList timers_; // <事件戳，定时器指针>
 
   // for cancel()
-  ActiveTimerSet activeTimers_;
+  ActiveTimerSet activeTimers_;  // <定时器指针，int64_t>
   // 正在调用过期的定时器
   bool callingExpiredTimers_; /* atomic */
   ActiveTimerSet cancelingTimers_;

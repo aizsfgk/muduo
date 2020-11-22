@@ -44,14 +44,15 @@ EventLoopThread::~EventLoopThread()
 EventLoop* EventLoopThread::startLoop()
 {
   assert(!thread_.started());
-  thread_.start();
+
+  thread_.start(); /// 启动线程 pthread_create
 
   EventLoop* loop = NULL;
   {
     MutexLockGuard lock(mutex_);
     while (loop_ == NULL)
     {
-      cond_.wait();
+      cond_.wait();   /// 阻塞等在这里
     }
     loop = loop_;
   }
@@ -66,17 +67,20 @@ void EventLoopThread::threadFunc()
   // 存在回调函数；直接回调;初始化回调函数
   if (callback_)
   {
-    callback_(&loop);
+    callback_(&loop); /// 先调用这个回调
   }
 
   // 设置本线程loop
   {
     MutexLockGuard lock(mutex_);
-    loop_ = &loop;
-    cond_.notify();
+    loop_ = &loop;  // 复制
+
+    cond_.notify(); // 唤醒
   }
 
-  loop.loop();     /// 开启事件循环
+  loop.loop();     /// 开启事件循环[这里开启事件循环了]
+
+
   //assert(exiting_);
   MutexLockGuard lock(mutex_);
   loop_ = NULL;

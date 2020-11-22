@@ -83,7 +83,8 @@ EventLoop::EventLoop()
     
     poller_(Poller::newDefaultPoller(this)),
     
-    timerQueue_(new TimerQueue(this)),
+    timerQueue_(new TimerQueue(this)), // 新建定时器队列
+
     wakeupFd_(createEventfd()), /// 设置唤醒FD
     wakeupChannel_(new Channel(this, wakeupFd_)),
     currentActiveChannel_(NULL)
@@ -221,30 +222,36 @@ size_t EventLoop::queueSize() const
 
 
 /*
-   1. 
+   ******************* 定时器相关函数 ******************** 
+   
+    
 */
 TimerId EventLoop::runAt(Timestamp time, TimerCallback cb)
 {
-  return timerQueue_->addTimer(std::move(cb), time, 0.0);
+  return timerQueue_->addTimer(std::move(cb), time, 0.0); // 添加到定时器队列
 }
 
 TimerId EventLoop::runAfter(double delay, TimerCallback cb)
 {
-  Timestamp time(addTime(Timestamp::now(), delay));
-  return runAt(time, std::move(cb));
+  Timestamp time(addTime(Timestamp::now(), delay));    // 当前时间戳增加一个时间
+  return runAt(time, std::move(cb));                   // 添加到定时器队列
 }
 
 
 TimerId EventLoop::runEvery(double interval, TimerCallback cb)
 {
   Timestamp time(addTime(Timestamp::now(), interval));
-  return timerQueue_->addTimer(std::move(cb), time, interval);
+  return timerQueue_->addTimer(std::move(cb), time, interval);  // 循环执行
 }
 
 void EventLoop::cancel(TimerId timerId)
 {
   return timerQueue_->cancel(timerId);
 }
+
+
+
+
 
 void EventLoop::updateChannel(Channel* channel)
 {

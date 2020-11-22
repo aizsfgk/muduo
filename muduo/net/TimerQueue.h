@@ -55,12 +55,14 @@ class TimerQueue : noncopyable
   // This requires heterogeneous comparison lookup (N3465) from C++14
   // so that we can find an T* in a set<unique_ptr<T>>.
   typedef std::pair<Timestamp, Timer*> Entry;
-  typedef std::set<Entry> TimerList;
-  typedef std::pair<Timer*, int64_t> ActiveTimer;
-  typedef std::set<ActiveTimer> ActiveTimerSet;
+  typedef std::set<Entry> TimerList;                /// 定时器列表
+
+  typedef std::pair<Timer*, int64_t> ActiveTimer;   /// 激活的定时器
+  typedef std::set<ActiveTimer> ActiveTimerSet;     /// 激活的定时器集合
 
   void addTimerInLoop(Timer* timer);
   void cancelInLoop(TimerId timerId);
+
   // called when timerfd alarms
   void handleRead();
   // move out all expired timers
@@ -69,14 +71,18 @@ class TimerQueue : noncopyable
 
   bool insert(Timer* timer);
 
-  EventLoop* loop_;
+  // 属于哪个事件循环
+  EventLoop* loop_; 
+  // timerfd句柄            
   const int timerfd_;
+  // timerfdChannel 关注channel
   Channel timerfdChannel_;
   // Timer list sorted by expiration
   TimerList timers_;
 
   // for cancel()
   ActiveTimerSet activeTimers_;
+  // 正在调用过期的定时器
   bool callingExpiredTimers_; /* atomic */
   ActiveTimerSet cancelingTimers_;
 };

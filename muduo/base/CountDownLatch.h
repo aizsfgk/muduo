@@ -25,6 +25,7 @@ class CountDownLatch : noncopyable
   int getCount() const;
 
  private:
+  // mutable的中文意思是“可变的，易变的”，跟constant（既C++中的const）是反义词
   mutable MutexLock mutex_;
   Condition condition_ GUARDED_BY(mutex_);
   int count_ GUARDED_BY(mutex_);

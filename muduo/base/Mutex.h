@@ -22,6 +22,20 @@
 #define THREAD_ANNOTATION_ATTRIBUTE__(x)   // no-op
 #endif
 
+/*
+   gcc 各种编译器特性宏
+
+   GUARDED_BY是一个应用在数据成员上的属性，它声明了数据成员被给定的监护权保护。对于数据的读操作需要共享的访问权限，而写操作需要独占的访问权限。
+
+   PT_GUARDED_BY与之类似，只不过它是为指针和智能指针准备的。对数据成员（指针）本身没有任何限制，它保护的是指针指向的数据
+
+   https://zhuanlan.zhihu.com/p/72403104
+
+   http://yizhanggou.top/untitled-4/
+
+   告诉编译器哪些成员变量和成员函数是受哪个 mutex 保护，这样如果忘记了加锁，编译器会给警告
+
+ */
 #define CAPABILITY(x) \
   THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
 
@@ -29,7 +43,7 @@
   THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
 
 #define GUARDED_BY(x) \
-  THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+  THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x)) /// guarded_by属性是为了保证线程安全，使用该属性后，线程要使用相应变量，必须先锁定mutex_
 
 #define PT_GUARDED_BY(x) \
   THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
@@ -93,6 +107,7 @@ extern void __assert_perror_fail (int errnum,
 __END_DECLS
 #endif
 
+// 如果线程返回的不是0； 则crash
 #define MCHECK(ret) ({ __typeof__ (ret) errnum = (ret);         \
                        if (__builtin_expect(errnum != 0, 0))    \
                          __assert_perror_fail (errnum, __FILE__, __LINE__, __func__);})
@@ -124,13 +139,13 @@ class CAPABILITY("mutex") MutexLock : noncopyable
   MutexLock()
     : holder_(0)
   {
-    MCHECK(pthread_mutex_init(&mutex_, NULL));
+    MCHECK(pthread_mutex_init(&mutex_, NULL)); // 互斥量初始化
   }
 
   ~MutexLock()
   {
     assert(holder_ == 0);
-    MCHECK(pthread_mutex_destroy(&mutex_));
+    MCHECK(pthread_mutex_destroy(&mutex_));    // 互斥量销毁
   }
 
   // must be called when locked, i.e. for assertion
@@ -194,8 +209,8 @@ class CAPABILITY("mutex") MutexLock : noncopyable
     holder_ = CurrentThread::tid();
   }
 
-  pthread_mutex_t mutex_;
-  pid_t holder_;
+  pthread_mutex_t mutex_;   // 互斥量
+  pid_t holder_;            // 线程ID
 };
 
 // Use as a stack variable, eg.

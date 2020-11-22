@@ -2,12 +2,27 @@
 // that can be found in the License file.
 //
 // Author: Shuo Chen (chenshuo at chenshuo dot com)
+// 
+// 
+// 线程包装类
+// 
+// 
+// 
+// 
+// 
+// 
+// 
 
+// 头文件
 #include "muduo/base/Thread.h"
+// 当前线程
 #include "muduo/base/CurrentThread.h"
+// 异常
 #include "muduo/base/Exception.h"
+// 日志
 #include "muduo/base/Logging.h"
 
+// TODO
 #include <type_traits>
 
 #include <errno.h>
@@ -18,11 +33,28 @@
 #include <sys/types.h>
 #include <linux/unistd.h>
 
+/*
+1. muduo Thread类包装了linux操作系统的pthread
+   并增加了互斥量，条件变量，倒计时门闩等，
+   通过线程本地存储，保存了当前线程的 线程ID[做了缓存]，线程名[可以自定义]， t_tidString等
+2. 3个类
+   ThreadNameInitializer
+      引入muduo_base Lib库的时候，会init一次，设置mt_threadName 为main，并设置线程t_cacheId
+
+   ThreadData
+
+   Thread ： 倒计时门闩很巧妙，为了同步吧?
+
+*/
+
 namespace muduo
 {
 namespace detail
 {
 
+/**
+ * 获取线程ID函数
+ */
 pid_t gettid()
 {
   return static_cast<pid_t>(::syscall(SYS_gettid));
@@ -31,11 +63,14 @@ pid_t gettid()
 void afterFork()
 {
   muduo::CurrentThread::t_cachedTid = 0;
-  muduo::CurrentThread::t_threadName = "main";
+  muduo::CurrentThread::t_threadName = "main"; // 主线程
   CurrentThread::tid();
   // no need to call pthread_atfork(NULL, NULL, &afterFork);
 }
 
+/**
+ * 线程名初始化器
+ */
 class ThreadNameInitializer
 {
  public:
@@ -43,11 +78,18 @@ class ThreadNameInitializer
   {
     muduo::CurrentThread::t_threadName = "main";
     CurrentThread::tid();
+    /*
+      #include <pthread.h>
+int pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(void));
+
+pthread_atfork()在fork()之前调用。当调用fork时，内部创建子进程前在父进程中会调用prepare，内部创建子进程成功后，父进程会调用parent ，子进程会调用child
+     */
+
     pthread_atfork(NULL, NULL, &afterFork);
   }
 };
 
-ThreadNameInitializer init;
+ThreadNameInitializer init;   /// 初始化
 
 struct ThreadData
 {
@@ -69,13 +111,19 @@ struct ThreadData
 
   void runInThread()
   {
-    *tid_ = muduo::CurrentThread::tid();
+    *tid_ = muduo::CurrentThread::tid(); /// 获取线程ID
     tid_ = NULL;
-    latch_->countDown();
+    latch_->countDown(); /// 减小门闩数
     latch_ = NULL;
 
+    /// 这里修改线程名字 --- 
     muduo::CurrentThread::t_threadName = name_.empty() ? "muduoThread" : name_.c_str();
+    //
+    // 设置线程名字
+    // Set the name of the calling thread, using the value in the lo‐
+    //          cation pointed to by (char *) arg2.
     ::prctl(PR_SET_NAME, muduo::CurrentThread::t_threadName);
+
     try
     {
       func_();
@@ -86,7 +134,7 @@ struct ThreadData
       muduo::CurrentThread::t_threadName = "crashed";
       fprintf(stderr, "exception caught in Thread %s\n", name_.c_str());
       fprintf(stderr, "reason: %s\n", ex.what());
-      fprintf(stderr, "stack trace: %s\n", ex.stackTrace());
+      fprintf(stderr, "stack trace: %s\n", ex.stackTrace()); /// 打印栈信息
       abort();
     }
     catch (const std::exception& ex)
@@ -148,14 +196,14 @@ Thread::Thread(ThreadFunc func, const string& n)
     name_(n),
     latch_(1)
 {
-  setDefaultName();
+  setDefaultName(); /// 增加线程数
 }
 
 Thread::~Thread()
 {
   if (started_ && !joined_)
   {
-    pthread_detach(pthreadId_);
+    pthread_detach(pthreadId_); // 分离线程
   }
 }
 
@@ -184,7 +232,7 @@ void Thread::start()
   }
   else
   {
-    latch_.wait();
+    latch_.wait(); /// 启动一个线程等在这里
     assert(tid_ > 0);
   }
 }

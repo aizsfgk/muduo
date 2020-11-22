@@ -85,11 +85,15 @@ class AtomicIntegerT : noncopyable
   }
 
  private:
+  /**
+   * 有些变量是用 volatile 关键字声明的。当两个线程都要用到某一个变量且该变量的值会被改变时，应该用 volatile 声明，该关键字的作用是防止优化编译器把变量从内存装入 CPU 寄存器中
+   * 来源：https://www.runoob.com/w3cnote/c-volatile-keyword.html
+   */
   volatile T value_;
 };
 }  // namespace detail
 
-typedef detail::AtomicIntegerT<int32_t> AtomicInt32;
+typedef detail::AtomicIntegerT<int32_t> AtomicInt32; // 定义些类型
 typedef detail::AtomicIntegerT<int64_t> AtomicInt64;
 
 }  // namespace muduo

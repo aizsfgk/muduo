@@ -19,6 +19,10 @@ namespace muduo
 ///
 /// This class is immutable.
 /// It's recommended to pass it by value, since it's passed in register on x64.
+/// 
+/// 这个类是不可改变的
+/// 推荐使用值传递，尽管其被传递通过在寄存器中，在x64系统
+/// 
 ///
 class Timestamp : public muduo::copyable,
                   public boost::equality_comparable<Timestamp>,
@@ -59,6 +63,9 @@ class Timestamp : public muduo::copyable,
   time_t secondsSinceEpoch() const
   { return static_cast<time_t>(microSecondsSinceEpoch_ / kMicroSecondsPerSecond); }
 
+
+  
+  // 静态成员函数和静态数据成员一样，它们都属于类的静态成员，它们都不是对象成员。因此，对静态成员的引用不需要用对象名。  
   ///
   /// Get time of now.
   ///
@@ -78,10 +85,11 @@ class Timestamp : public muduo::copyable,
     return Timestamp(static_cast<int64_t>(t) * kMicroSecondsPerSecond + microseconds);
   }
 
+  // static修饰的成员变量在对象中是不占用内存的，因为它不是跟对象一起在堆或者栈中生成的，它是在静态存储区生成的
   static const int kMicroSecondsPerSecond = 1000 * 1000;
 
  private:
-  int64_t microSecondsSinceEpoch_;
+  int64_t microSecondsSinceEpoch_; /// 从标准时间到现在的秒数
 };
 
 inline bool operator<(Timestamp lhs, Timestamp rhs)

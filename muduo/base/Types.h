@@ -15,7 +15,7 @@
 namespace muduo
 {
 
-using std::string;
+using std::string;   /// 直接是标准库字符串
 
 inline void memZero(void* p, size_t n)
 {

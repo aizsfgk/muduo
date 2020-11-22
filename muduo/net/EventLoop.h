@@ -175,10 +175,11 @@ class EventLoop : noncopyable
   bool callingPendingFunctors_; /* atomic */  /// 是否正在调用pending函数
 
   int64_t iteration_;
-  const pid_t threadId_;              /// 保存启动该Loop的线程ID
+  const pid_t threadId_;                   // 保存启动该Loop的线程ID
   Timestamp pollReturnTime_;
-  std::unique_ptr<Poller> poller_;    /// Poller
-  std::unique_ptr<TimerQueue> timerQueue_;
+  std::unique_ptr<Poller> poller_;         // Poller
+
+  std::unique_ptr<TimerQueue> timerQueue_; // 定时器队列指针
 
 
   int wakeupFd_;

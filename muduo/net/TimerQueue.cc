@@ -27,6 +27,14 @@ namespace net
 namespace detail
 {
 
+
+/**
+ * 4个方法
+ *   1. 创建timerfd
+ *   2. 和当前相差多久
+ *   3. 读取timerfd
+ *   4. 重置timerfd
+ */
 int createTimerfd()
 {
   int timerfd = ::timerfd_create(CLOCK_MONOTONIC,
@@ -88,6 +96,11 @@ using namespace muduo;
 using namespace muduo::net;
 using namespace muduo::net::detail;
 
+/**
+ * 10个TimerQueue相关函数
+ *
+ * 
+ */
 TimerQueue::TimerQueue(EventLoop* loop)
   : loop_(loop),
     timerfd_(createTimerfd()),
@@ -98,6 +111,7 @@ TimerQueue::TimerQueue(EventLoop* loop)
   timerfdChannel_.setReadCallback(
       std::bind(&TimerQueue::handleRead, this));
   // we are always reading the timerfd, we disarm it with timerfd_settime.
+  // 
   timerfdChannel_.enableReading();
 }
 

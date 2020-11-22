@@ -45,7 +45,7 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
   {
     char buf[name_.size() + 32];
     snprintf(buf, sizeof buf, "%s%d", name_.c_str(), i);
-    EventLoopThread* t = new EventLoopThread(cb, buf);
+    EventLoopThread* t = new EventLoopThread(cb, buf); // buf是线程名
 
 	/// 线程池
     threads_.push_back(std::unique_ptr<EventLoopThread>(t));

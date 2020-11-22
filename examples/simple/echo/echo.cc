@@ -16,7 +16,7 @@ EchoServer::EchoServer(muduo::net::EventLoop* loop,
   server_.setConnectionCallback(
       std::bind(&EchoServer::onConnection, this, _1));
   server_.setMessageCallback(
-      std::bind(&EchoServer::onMessage, this, _1, _2, _3));
+      std::bind(&EchoServer::onMessage, this, _1, _2, _3));  /// 使用参数占位符号
 }
 
 void EchoServer::start()

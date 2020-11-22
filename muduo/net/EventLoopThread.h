@@ -15,12 +15,19 @@
 #include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
 
+
+/*
+
+1. 线程和Loop绑定
+
+*/
+
 namespace muduo
 {
 namespace net
 {
 
-class EventLoop;
+class EventLoop;   // 事件循环
 
 class EventLoopThread : noncopyable
 {
@@ -28,15 +35,15 @@ class EventLoopThread : noncopyable
   typedef std::function<void(EventLoop*)> ThreadInitCallback; /// 线程初始化回调
 
   EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(),
-                  const string& name = string());
+                  const string& name = string()); /// 线程回调和线程名字
   ~EventLoopThread();
   
-  EventLoop* startLoop();
+  EventLoop* startLoop();    //// 开始事件循环
 
  private:
-  void threadFunc();
+  void threadFunc();    // 线程启动的函数
 
-  EventLoop* loop_ GUARDED_BY(mutex_);
+  EventLoop* loop_ GUARDED_BY(mutex_); /// 事件循环指针
   bool exiting_;
   Thread thread_;
   MutexLock mutex_;

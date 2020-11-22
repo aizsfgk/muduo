@@ -19,9 +19,13 @@ namespace muduo
 namespace net
 {
 
+// 连接器
 class Connector;
+// 连接器指针
 typedef std::shared_ptr<Connector> ConnectorPtr;
 
+
+// 客户端
 class TcpClient : noncopyable
 {
  public:
@@ -32,8 +36,12 @@ class TcpClient : noncopyable
             const string& nameArg);
   ~TcpClient();  // force out-line dtor, for std::unique_ptr members.
 
+
+  // 连接
   void connect();
+  // 取消连接
   void disconnect();
+  // 停止
   void stop();
 
   TcpConnectionPtr connection() const
@@ -73,14 +81,21 @@ class TcpClient : noncopyable
   EventLoop* loop_;
   ConnectorPtr connector_; // avoid revealing Connector
   const string name_;
+
+  // 连接
   ConnectionCallback connectionCallback_;
+  // 读
   MessageCallback messageCallback_;
+  // 写
   WriteCompleteCallback writeCompleteCallback_;
+
   bool retry_;   // atomic
   bool connect_; // atomic
   // always in loop thread
   int nextConnId_;
   mutable MutexLock mutex_;
+
+  // 只有一个连接
   TcpConnectionPtr connection_ GUARDED_BY(mutex_);
 };
 

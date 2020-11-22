@@ -67,7 +67,7 @@ class Session : noncopyable
     conn->send(buf);
   }
 
-  TcpClient client_;
+  TcpClient client_;   /// TCP客户端
   Client* owner_;
   int64_t bytesRead_;
   int64_t bytesWritten_;

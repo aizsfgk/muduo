@@ -37,11 +37,13 @@ namespace net
 namespace detail
 {
 
+// 删除连接
 void removeConnection(EventLoop* loop, const TcpConnectionPtr& conn)
 {
   loop->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
 }
 
+// 删除连接器
 void removeConnector(const ConnectorPtr& connector)
 {
   //connector->
@@ -51,15 +53,17 @@ void removeConnector(const ConnectorPtr& connector)
 }  // namespace net
 }  // namespace muduo
 
+
+// 构造函数
 TcpClient::TcpClient(EventLoop* loop,
                      const InetAddress& serverAddr,
                      const string& nameArg)
-  : loop_(CHECK_NOTNULL(loop)),
-    connector_(new Connector(loop, serverAddr)),
+  : loop_(CHECK_NOTNULL(loop)),   /// 事件循环
+    connector_(new Connector(loop, serverAddr)),  /// 连接器
     name_(nameArg),
-    connectionCallback_(defaultConnectionCallback),
-    messageCallback_(defaultMessageCallback),
-    retry_(false),
+    connectionCallback_(defaultConnectionCallback),   // 连接回调
+    messageCallback_(defaultMessageCallback),         // 读回调
+    retry_(false),                                    
     connect_(true),
     nextConnId_(1)
 {
@@ -70,6 +74,7 @@ TcpClient::TcpClient(EventLoop* loop,
            << "] - connector " << get_pointer(connector_);
 }
 
+// 析构函数
 TcpClient::~TcpClient()
 {
   LOG_INFO << "TcpClient::~TcpClient[" << name_
@@ -90,7 +95,7 @@ TcpClient::~TcpClient()
         std::bind(&TcpConnection::setCloseCallback, conn, cb));
     if (unique)
     {
-      conn->forceClose();
+      conn->forceClose();    // 强制关闭
     }
   }
   else
@@ -118,7 +123,7 @@ void TcpClient::disconnect()
     MutexLockGuard lock(mutex_);
     if (connection_)
     {
-      connection_->shutdown();
+      connection_->shutdown();   // 关闭了
     }
   }
 }
@@ -132,6 +137,7 @@ void TcpClient::stop()
 void TcpClient::newConnection(int sockfd)
 {
   loop_->assertInLoopThread();
+
   InetAddress peerAddr(sockets::getPeerAddr(sockfd));
   char buf[32];
   snprintf(buf, sizeof buf, ":%s#%d", peerAddr.toIpPort().c_str(), nextConnId_);
@@ -156,6 +162,8 @@ void TcpClient::newConnection(int sockfd)
     MutexLockGuard lock(mutex_);
     connection_ = conn;
   }
+
+
   conn->connectEstablished();
 }
 

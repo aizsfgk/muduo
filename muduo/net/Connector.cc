@@ -77,8 +77,11 @@ void Connector::stopInLoop()
 
 void Connector::connect()
 {
-  int sockfd = sockets::createNonblockingOrDie(serverAddr_.family());
+  int sockfd = sockets::createNonblockingOrDie(serverAddr_.family()); // 设置非阻塞socketFD
+
+  // 进行连接
   int ret = sockets::connect(sockfd, serverAddr_.getSockAddr());
+
   int savedErrno = (ret == 0) ? 0 : errno;
   switch (savedErrno)
   {
@@ -130,8 +133,12 @@ void Connector::connecting(int sockfd)
   setState(kConnecting);
   assert(!channel_);
   channel_.reset(new Channel(loop_, sockfd));
+
+
+  // 设置写回调
   channel_->setWriteCallback(
       std::bind(&Connector::handleWrite, this)); // FIXME: unsafe
+  // 设置读回调
   channel_->setErrorCallback(
       std::bind(&Connector::handleError, this)); // FIXME: unsafe
 

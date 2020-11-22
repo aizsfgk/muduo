@@ -218,6 +218,8 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
   }
 }
 
+
+// 半关闭
 void TcpConnection::shutdown()
 {
   // FIXME: use compare and swap
@@ -263,6 +265,8 @@ void TcpConnection::shutdownInLoop()
 //                        &TcpConnection::forceCloseInLoop));
 // }
 
+
+// 强制关闭
 void TcpConnection::forceClose()
 {
   // FIXME: use compare and swap
@@ -365,7 +369,7 @@ void TcpConnection::connectEstablished()
    *
    * 
    */
-  connectionCallback_(shared_from_this()); 
+  connectionCallback_(shared_from_this());     /// 1.连接稳定调用一次
 }
 
 void TcpConnection::connectDestroyed()
@@ -376,7 +380,7 @@ void TcpConnection::connectDestroyed()
     setState(kDisconnected);
     channel_->disableAll();
 
-    connectionCallback_(shared_from_this());
+    connectionCallback_(shared_from_this());   /// 2.销毁调用一次
   }
   channel_->remove();
 }
@@ -456,6 +460,8 @@ void TcpConnection::handleWrite()
   }
 }
 
+
+// 处理关闭
 void TcpConnection::handleClose()
 {
   loop_->assertInLoopThread();
@@ -468,7 +474,7 @@ void TcpConnection::handleClose()
   TcpConnectionPtr guardThis(shared_from_this());
 
   
-  connectionCallback_(guardThis); // 连接回调
+  connectionCallback_(guardThis); // 3. 处理关闭，
 
 
   // must be the last line

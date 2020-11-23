@@ -82,6 +82,7 @@ void Connector::connect()
   // 进行连接
   int ret = sockets::connect(sockfd, serverAddr_.getSockAddr());
 
+  // 获取错误号
   int savedErrno = (ret == 0) ? 0 : errno;
   switch (savedErrno)
   {
@@ -130,8 +131,10 @@ void Connector::restart()
 
 void Connector::connecting(int sockfd)
 {
-  setState(kConnecting);
+  setState(kConnecting); // 设置为连接中
   assert(!channel_);
+
+
   channel_.reset(new Channel(loop_, sockfd));
 
 
@@ -164,8 +167,12 @@ void Connector::resetChannel()
 
 void Connector::handleWrite()
 {
+  /**
+   * 当连接可写的时候，表示 connect 成功
+   */
   LOG_TRACE << "Connector::handleWrite " << state_;
 
+  // 如果状态是正在连接中
   if (state_ == kConnecting)
   {
     int sockfd = removeAndResetChannel();
@@ -194,7 +201,7 @@ void Connector::handleWrite()
       }
     }
   }
-  else
+  else // 应该是不会出现这种情况
   {
     // what happened?
     assert(state_ == kDisconnected);

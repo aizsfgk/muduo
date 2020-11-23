@@ -134,6 +134,9 @@ void TcpClient::stop()
   connector_->stop();
 }
 
+/**
+ * 新连接到来如何处理
+ */
 void TcpClient::newConnection(int sockfd)
 {
   loop_->assertInLoopThread();

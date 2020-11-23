@@ -6,7 +6,9 @@
 #ifndef MUDUO_BASE_LOGFILE_H
 #define MUDUO_BASE_LOGFILE_H
 
+// 互斥锁
 #include "muduo/base/Mutex.h"
+// 类型
 #include "muduo/base/Types.h"
 
 #include <memory>

@@ -2,9 +2,16 @@
 // that can be found in the License file.
 //
 // Author: Shuo Chen (chenshuo at chenshuo dot com)
+// 
+/**
+ * 异步日志库
+ */
 
+// 异步日志头文件
 #include "muduo/base/AsyncLogging.h"
+// 日志文件
 #include "muduo/base/LogFile.h"
+// 时间戳
 #include "muduo/base/Timestamp.h"
 
 #include <stdio.h>
